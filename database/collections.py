@@ -1,13 +1,18 @@
+import weaviate, os
 from weaviate.classes.config import Property, DataType
 
 
-# Note that you can use `client.collections.create_from_dict()` to create a collection from a v3-client-style JSON object
-"""
-collectionent.collections.create(
-    "Article",
+client = weaviate.connect_to_local("localhost", 8080, 50051)
+
+client.collections.create(
+    "Person",
     properties=[
-        Property(name="title", data_type=DataType.TEXT),
-        Property(name="body", data_type=DataType.TEXT),
-    ]
+        Property(name="identification", data_type=DataType.INT),
+        Property(name="name", data_type=DataType.TEXT),
+        Property(name="age", data_type=DataType.INT),
+        Property(name="role", data_type=DataType.TEXT),
+        Property(name="phone_number", data_type=DataType.PHONE_NUMBER),
+        Property(name="registration_date", data_type=DataType.DATE),
+        Property(name="last_update_date", data_type=DataType.DATE),
+    ],
 )
-"""
