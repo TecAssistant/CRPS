@@ -16,4 +16,5 @@ def preload_image(file_name, image_path, save_path):
     embedding = model.predict(x)
     embedding_list = embedding[0].tolist()
     embedding_json = json.dumps(embedding_list)
-    save_json(file_name, save_path, embedding_json)
+    return embedding_list
+    # save_json(file_name, save_path, embedding_json)

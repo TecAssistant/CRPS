@@ -1,4 +1,3 @@
-import weaviate, os
 import weaviate.classes as wvc
 
 

@@ -1,5 +1,7 @@
 import weaviate, os
 from weaviate.classes.config import Property, DataType
+from weaviate.classes.query import MetadataQuery
+from utils.embeddings import preload_image
 
 vectorTest = [
     0.1975807398557663,
@@ -2068,33 +2070,52 @@ def create_collection(client):
     )
 
 
-def insert_into_collection(client):
+def insert_into_collection(client, vector):
     person_collection = client.collections.get("Person")
     insert = person_collection.data.insert(
         properties={
             "identification": 123,
-            "name": "Test",
+            "name": "Mr Beast",
             "age": 55,
             "role": "Teacher",
             "phone_number": {"input": "888888", "defaultCountry": "US"},
             "registration_date": "2023-07-03T00:00:00Z",
             "last_update_date": "2025-07-03T00:00:00Z",
         },
-        vector=vectorTest,
+        vector=vector,
     )
 
     print(insert)
 
 
 def main():
+    newVec = preload_image("beast.json", "img/beast.jpg", "output/")
     client = weaviate.connect_to_local("localhost", 8080, 50051)
     # create_collection(client)
-    # insert_into_collection(client)
+    # insert_into_collection(client, newVec)
 
     collection = client.collections.get("Person")
 
-    for item in collection.iterator():
-        print(item.uuid, item.properties)
+    """
+    for item in collection.iterator(include_vector=True):
+        print(
+            item.uuid,
+            item.properties,
+            # item.vector
+        )
+    """
+
+    response = collection.query.near_vector(
+        near_vector=newVec,  # your query vector goes here
+        limit=1,
+        return_metadata=MetadataQuery(distance=True),
+    )
+
+    for o in response.objects:
+        print(o.properties)
+        distance = o.metadata.distance
+        if distance is not None:
+            print((1 - distance) * 100)
 
     client.close()
 
