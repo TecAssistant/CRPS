@@ -1,0 +1,27 @@
+
+# Qué es un embedding?
+
+Un embedding es una representación matemática de datos en forma de vector. Básicamente se capturan las caracteristicas más relevantes de esos datos en un espacio de dimenciones reducidas.
+
+
+# Ventajas de usar un embedding
+
+* Seguridad: Guardar embeddings pede ofrecer un nivel extra de seguridad, ya que es más dificil reconstruir una imagen a partir de un vector
+*
+*
+
+# Bases de datos enfocadas en Embeddings
+
+https://www.datacamp.com/blog/the-top-5-vector-databases
+
+Weaviate
+
+
+
+Qdrant
+
+
+# HNSW Algorithm
+
+En español denominado como Hierarchical navigable small world
+Este algoritmo es el que usa el Weaviate para buscar similitudes
