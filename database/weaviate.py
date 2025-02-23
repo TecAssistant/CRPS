@@ -1,22 +1,62 @@
-import weaviate.classes as wvc
+import weaviate
+import os
+from dotenv import load_dotenv
+from weaviate.classes.query import MetadataQuery
 
 
-def connect_to_client(port):
-    client = weaviate.connect_to_local("localhost", 8090, 50051)
-    client.is_ready()
+def connect_database():
+    load_dotenv()
+    host = os.getenv("DATABASE_HOST", "localhost")
+    port = int(os.getenv("DATABASE_PORT", 8080))
+    grpc_port = int(os.getenv("DATABASE_GRPC_PORT", 50051))
+
+    client = weaviate.connect_to_local(host, port, grpc_port)
+    return client
 
 
-def vector_query():
-    pass
+def insert_into_collection(collection, vector, properties):
+    client = connect_database()
+    collection = client.collections.get(collection)
+    collection.data.insert(
+        properties=properties,
+        vector=vector,
+    )
+    client.close()
 
 
-def main():
-    human_path = "img/human-face.jpeg"
-    path2 = "img/Selfie.png"
-    port = 8090
-    connect_to_client(port)
+def print_collection(collection):
+    client = connect_database()
+    collection = client.collections.get(collection)
+    for item in collection.iterator(include_vector=True):
+        print(
+            item.uuid,
+            item.properties,
+            # item.vector
+        )
+    client.close()
 
-    # dest = "output"
-    # # image = Image.open(path)
-    # image.show()
-    # preload_image("human-face.json", human_path, dest)
+
+def search_by_vector(collection, vector, limit):
+    client = connect_database()
+    collection = client.collections.get(collection)
+    response = collection.query.near_vector(
+        near_vector=vector,
+        limit=limit,
+        return_metadata=MetadataQuery(distance=True),
+    )
+
+    print("-" * 40)
+    for o in response.objects:
+        properties = o.properties
+        distance = o.metadata.distance
+
+        for key, value in properties.items():
+            print(f"{key.capitalize()}: {value}")
+
+        if distance is not None:
+            confidence = (1 - distance) * 100
+            print(f"Confidence: {confidence:.2f}%")
+
+        print("-" * 40)
+
+    client.close()

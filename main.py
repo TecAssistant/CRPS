@@ -1,9 +1,10 @@
 import weaviate, os
 from weaviate.classes.config import Property, DataType
 from weaviate.classes.query import MetadataQuery
-from utils.embeddings import preload_image
+from utils.embeddings import preload_image, generate_artificial_embedding
+from database.weaviate import insert_into_collection, print_collection, search_by_vector
 
-vectorTest = [
+generic_vector = [
     0.1975807398557663,
     0.4431092441082001,
     0.004030417650938034,
@@ -2055,69 +2056,26 @@ vectorTest = [
 ]
 
 
-def create_collection(client):
-    client.collections.create(
-        "Person",
-        properties=[
-            Property(name="identification", data_type=DataType.INT),
-            Property(name="name", data_type=DataType.TEXT),
-            Property(name="age", data_type=DataType.INT),
-            Property(name="role", data_type=DataType.TEXT),
-            Property(name="phone_number", data_type=DataType.PHONE_NUMBER),
-            Property(name="registration_date", data_type=DataType.DATE),
-            Property(name="last_update_date", data_type=DataType.DATE),
-        ],
-    )
-
-
-def insert_into_collection(client, vector):
-    person_collection = client.collections.get("Person")
-    insert = person_collection.data.insert(
-        properties={
-            "identification": 123,
-            "name": "Mr Beast",
-            "age": 55,
-            "role": "Teacher",
-            "phone_number": {"input": "888888", "defaultCountry": "US"},
-            "registration_date": "2023-07-03T00:00:00Z",
-            "last_update_date": "2025-07-03T00:00:00Z",
-        },
-        vector=vector,
-    )
-
-    print(insert)
-
-
 def main():
-    newVec = preload_image("beast.json", "img/beast.jpg", "output/")
-    client = weaviate.connect_to_local("localhost", 8080, 50051)
-    # create_collection(client)
-    # insert_into_collection(client, newVec)
+    # newVec = preload_image("beast.json", "img/beast.jpg", "output/")
+    # search_by_vector("Person", newVec, 2)
+    # print_collection("Person")
 
-    collection = client.collections.get("Person")
+    # test_properties = {
+    #    "identification": 122223,
+    #    "name": "Funcion",
+    #    "age": 88,
+    #    "role": "Teacher",
+    #    "phone_number": {"input": "888888", "defaultCountry": "US"},
+    #    "registration_date": "2023-07-03T00:00:00Z",
+    #    "last_update_date": "2025-07-03T00:00:00Z",
+    # }
 
-    """
-    for item in collection.iterator(include_vector=True):
-        print(
-            item.uuid,
-            item.properties,
-            # item.vector
-        )
-    """
+    test_vector = generate_artificial_embedding(2048)
+    # insert_into_collection("Person", test_vector, test_properties)
 
-    response = collection.query.near_vector(
-        near_vector=newVec,  # your query vector goes here
-        limit=1,
-        return_metadata=MetadataQuery(distance=True),
-    )
-
-    for o in response.objects:
-        print(o.properties)
-        distance = o.metadata.distance
-        if distance is not None:
-            print((1 - distance) * 100)
-
-    client.close()
+    # print_collection("Person")
+    search_by_vector("Person", test_vector, 3)
 
 
 if __name__ == "__main__":

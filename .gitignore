@@ -1,1 +1,5 @@
 .DS_Store
+crps/
+.env
+**/__pycache__/
+__pycache__/
