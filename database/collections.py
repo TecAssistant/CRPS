@@ -1,7 +1,9 @@
+from database.weaviate import connect_database
 from weaviate.classes.config import Property, DataType
 
 
-def create_person_collection(client):
+def create_person_collection():
+    client = connect_database()
     client.collections.create(
         "Person",
         properties=[
@@ -9,8 +11,9 @@ def create_person_collection(client):
             Property(name="name", data_type=DataType.TEXT),
             Property(name="age", data_type=DataType.INT),
             Property(name="role", data_type=DataType.TEXT),
-            Property(name="phone_number", data_type=DataType.PHONE_NUMBER),
+            Property(name="phone_number", data_type=DataType.TEXT),
             Property(name="registration_date", data_type=DataType.DATE),
             Property(name="last_update_date", data_type=DataType.DATE),
         ],
     )
+    client.close()
