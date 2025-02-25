@@ -9,35 +9,45 @@ from database.weaviate import (
     search_by_vector,
 )
 from database.collections import create_person_collection
+from utils.encryption import encrypt_dictionary, decrypt_dictionary
+
+test_properties = {
+    "identification": 8849382934,
+    "name": "Jose Espinoza",
+    "age": 16,
+    "role": "Student",
+    "phone_number": "+506 99389890",
+    "registration_date": "2023-08-04T00:00:00Z",
+    "last_update_date": "2025-09-04T00:00:00Z",
+}
+
+test_vector = generate_artificial_embedding(2048)
 
 
-def test():
+def test_db():
     # create_person_collection()
     # print_collection("Person")
     # newVec = preload_image("beast.json", "img/beast.jpg", "output/")
     # search_by_vector("Person", newVec, 2)
     # print_collection("Person")
 
-    test_properties = {
-        "identification": 122223,
-        "name": "Maria Gonzales",
-        "age": 23,
-        "role": "Teacher",
-        "phone_number": "+506 7777777",
-        "registration_date": "2023-07-03T00:00:00Z",
-        "last_update_date": "2025-07-03T00:00:00Z",
-    }
+    # insert_into_collection("Person", test_vector, test_properties)
 
-    test_vector = generate_artificial_embedding(2048)
-    insert_into_collection("Person", test_vector, test_properties)
+    print_collection("Person")
+    search_by_vector("Person", test_vector, 3)
 
-    # print_collection("Person")
-    # search_by_vector("Person", test_vector, 3)
+
+def test_encryption():
+    encrypted_dictionary = encrypt_dictionary(test_properties)
+    print(encrypted_dictionary)
+    print("-" * 40)
+    decrypted_dictionary = decrypt_dictionary(encrypted_dictionary)
+    print(decrypted_dictionary)
 
 
 def main():
-    test()
-    print_collection("Person")
+    test_db()
+    # test_encryption()
 
 
 if __name__ == "__main__":

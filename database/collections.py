@@ -7,13 +7,13 @@ def create_person_collection():
     client.collections.create(
         "Person",
         properties=[
-            Property(name="identification", data_type=DataType.INT),
+            Property(name="identification", data_type=DataType.TEXT),
             Property(name="name", data_type=DataType.TEXT),
-            Property(name="age", data_type=DataType.INT),
+            Property(name="age", data_type=DataType.TEXT),
             Property(name="role", data_type=DataType.TEXT),
             Property(name="phone_number", data_type=DataType.TEXT),
-            Property(name="registration_date", data_type=DataType.DATE),
-            Property(name="last_update_date", data_type=DataType.DATE),
+            Property(name="registration_date", data_type=DataType.TEXT),
+            Property(name="last_update_date", data_type=DataType.TEXT),
         ],
     )
     client.close()

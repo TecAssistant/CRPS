@@ -2,7 +2,7 @@ import weaviate
 import os
 from dotenv import load_dotenv
 from weaviate.classes.query import MetadataQuery
-from utils.encryption import encrypt_dictionary
+from utils.encryption import encrypt_dictionary, decrypt_data
 
 
 def connect_database():
@@ -18,7 +18,7 @@ def connect_database():
 def insert_into_collection(collection, vector, properties):
     client = connect_database()
     collection = client.collections.get(collection)
-    # properties = encrypt_dictionary(properties)  # check this, we should change all properties types to string
+    properties = encrypt_dictionary(properties)
     collection.data.insert(
         properties=properties,
         vector=vector,
@@ -53,7 +53,7 @@ def search_by_vector(collection, vector, limit):
         distance = o.metadata.distance
 
         for key, value in properties.items():
-            print(f"{key.capitalize()}: {value}")
+            print(f"{key.capitalize()}: {decrypt_data(value)}")
 
         if distance is not None:
             confidence = (1 - distance) * 100
