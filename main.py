@@ -9,32 +9,33 @@ from database.weaviate import (
     search_by_vector,
 )
 from database.collections import create_person_collection
-from utils.encryption import encrypt_dictionary, decrypt_dictionary
+from utils.encryption import encrypt_data, encrypt_dictionary, decrypt_dictionary
 
 test_properties = {
     "identification": 8849382934,
-    "name": "Jose Espinoza",
-    "age": 16,
-    "role": "Student",
-    "phone_number": "+506 99389890",
-    "registration_date": "2023-08-04T00:00:00Z",
-    "last_update_date": "2025-09-04T00:00:00Z",
+    "name": "Juan Gonzales",
+    "age": 23,
+    "role": "Teacher",
+    "phone_number": "+506 39292292",
+    "registration_date": "2024-05-04T00:00:00Z",
+    "last_update_date": "2025-010-04T00:00:00Z",
 }
+# print([generate_artificial_embedding(2048) for _ in range(10)])
 
 test_vector = generate_artificial_embedding(2048)
 
 
 def test_db():
-    # create_person_collection()
+    create_person_collection()
     # print_collection("Person")
     # newVec = preload_image("beast.json", "img/beast.jpg", "output/")
     # search_by_vector("Person", newVec, 2)
     # print_collection("Person")
 
-    # insert_into_collection("Person", test_vector, test_properties)
+    insert_into_collection("Person", test_vector, test_properties)
 
     print_collection("Person")
-    search_by_vector("Person", test_vector, 3)
+    search_by_vector("Person", test_vector, 1)
 
 
 def test_encryption():
@@ -46,8 +47,11 @@ def test_encryption():
 
 
 def main():
-    test_db()
+    # test_db()
     # test_encryption()
+    # client = connect_database()
+    # client.collections.delete("Person")
+    test_db()
 
 
 if __name__ == "__main__":

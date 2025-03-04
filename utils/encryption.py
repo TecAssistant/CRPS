@@ -27,7 +27,10 @@ def encrypt_dictionary(dictionary):
     cipher = get_cipher()
     encrypted_dict = {}
     for key, value in dictionary.items():
-        encrypted_dict[key] = cipher.encrypt(json.dumps(value).encode()).decode()
+        if not isinstance(value, list):
+            encrypted_dict[key] = cipher.encrypt(json.dumps(value).encode()).decode()
+        else:
+            encrypted_dict[key] = value
 
     return encrypted_dict
 
@@ -36,6 +39,7 @@ def decrypt_dictionary(dictionary):
     cipher = get_cipher()
     encrypted_dict = {}
     for key, value in dictionary.items():
-        encrypted_dict[key] = cipher.decrypt(json.dumps(value).encode()).decode()
+        if not isinstance(value, list):
+            encrypted_dict[key] = cipher.decrypt(json.dumps(value).encode()).decode()
 
     return encrypted_dict

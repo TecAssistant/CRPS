@@ -53,7 +53,10 @@ def search_by_vector(collection, vector, limit):
         distance = o.metadata.distance
 
         for key, value in properties.items():
-            print(f"{key.capitalize()}: {decrypt_data(value)}")
+            decrypted_value = value
+            if value is not None:
+                decrypted_value = decrypt_data(value)
+            print(f"{key.capitalize()}: {decrypted_value}")
 
         if distance is not None:
             confidence = (1 - distance) * 100
