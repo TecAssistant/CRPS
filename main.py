@@ -16,10 +16,10 @@ from data_handler import handler
 from utils.eye_checker import process_image
 
 test_properties = {
-    "identification": 8849382934,
-    "name": "Juan Gonzales",
-    "age": 23,
-    "role": "Teacher",
+    "identification": 12345678,
+    "name": "Adrian Villalobos",
+    "age": 19,
+    "role": "Student",
     "phone_number": "+506 39292292",
     "registration_date": "2024-05-04T00:00:00Z",
     "last_update_date": "2025-010-04T00:00:00Z",
@@ -60,7 +60,11 @@ def main():
 
 
 if __name__ == "__main__":
-    #dataset_path = "data_handler/dataset"
-    #handler.load_dataset(dataset_path, 1)
-    print(preload_image("beast.json", "img/beast.jpg", "output/"))
-   # main()
+    dataset_path = "data_handler/dataset"
+    # handler.load_dataset(dataset_path, 20)
+    # handler.test_images_loaded(dataset_path, 20)
+    # print(preload_image("beast.json", "img/beast.jpg", "output/"))
+    #insert_into_collection("Person", adrian, test_properties)
+
+    #search_by_vector("Person", adrian, 10)
+    # main()
