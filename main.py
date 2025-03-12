@@ -35,14 +35,6 @@ def test_db():
     # newVec = preload_image("beast.json", "img/beast.jpg", "output/")
     # search_by_vector("Person", newVec, 2)
     # print_collection("Person")
-
-<<<<<<< HEAD
-   # insert_into_collection("Person", test_vector, test_properties)
-=======
-    # insert_into_collection("Person", test_vector, test_properties)
->>>>>>> ee9625b724eda9d75fff35101ee6433344ae6761
-
-    print_collection("Person")
     search_by_vector("Person", test_vector, 1)
 
 
