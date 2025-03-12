@@ -57,7 +57,7 @@ def main():
     # test_db()
 
     predictor_path = "shape-predictor/shape_predictor_68_face_landmarks.dat"
-    image_path = "img/beast.jpg"
+    image_path = "img/closed-eyes.jpg"
     eyes_open = process_image(image_path, predictor_path, ear_threshold=0.3)
     print(eyes_open)
 
