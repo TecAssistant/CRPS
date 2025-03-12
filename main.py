@@ -10,6 +10,7 @@ from database.weaviate import (
 )
 from database.collections import create_person_collection
 from utils.encryption import encrypt_data, encrypt_dictionary, decrypt_dictionary
+from data_handler import handler
 
 test_properties = {
     "identification": 8849382934,
@@ -26,13 +27,13 @@ test_vector = generate_artificial_embedding(2048)
 
 
 def test_db():
-    create_person_collection()
+    # create_person_collection()
     # print_collection("Person")
     # newVec = preload_image("beast.json", "img/beast.jpg", "output/")
     # search_by_vector("Person", newVec, 2)
     # print_collection("Person")
 
-    insert_into_collection("Person", test_vector, test_properties)
+   # insert_into_collection("Person", test_vector, test_properties)
 
     print_collection("Person")
     search_by_vector("Person", test_vector, 1)
@@ -55,4 +56,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #dataset_path = "data_handler/dataset"
+    #handler.load_dataset(dataset_path, 1)
+    print(preload_image("beast.json", "img/beast.jpg", "output/"))
+   # main()
