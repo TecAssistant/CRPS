@@ -1,11 +1,13 @@
 import weaviate
 import os
 from dotenv import load_dotenv
+from weaviate.classes.init import Auth
 from weaviate.classes.query import MetadataQuery
 from weaviate.classes.init import Auth
 from utils.encryption import encrypt_dictionary, decrypt_data
 
 def connect_database():
+<<<<<<< HEAD
     client = connect_remote_database()
     # client = connect_local_database()
     return client
@@ -28,9 +30,24 @@ def connect_local_database():
     host = os.getenv("DATABASE_HOST", "localhost")
     port = int(os.getenv("DATABASE_PORT", 8090))
     grpc_port = int(os.getenv("DATABASE_GRPC_PORT", 50051))
+=======
+	client = connect_remote_database()
+	# client = connect_local_database()
+	return client
+>>>>>>> ee9625b724eda9d75fff35101ee6433344ae6761
 
-    client = weaviate.connect_to_local(host, port, grpc_port)
-    return client
+
+def connect_remote_database():
+	load_dotenv()
+	url = os.getenv("WEAVIATE_URL", "")
+	api_key = os.getenv("WEAVIATE_API_KEY", "")
+
+	client = weaviate.connect_to_weaviate_cloud(
+    	cluster_url=url,
+    	auth_credentials=Auth.api_key(api_key),
+	)
+
+	return client
 
 
 def insert_into_collection(collection, vector, properties):

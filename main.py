@@ -1,4 +1,5 @@
-import weaviate, os
+import weaviate
+import os
 from weaviate.classes.config import Property, DataType
 from weaviate.classes.query import MetadataQuery
 from utils.embeddings import preload_image, generate_artificial_embedding
@@ -11,6 +12,8 @@ from database.weaviate import (
 from database.collections import create_person_collection
 from utils.encryption import encrypt_data, encrypt_dictionary, decrypt_dictionary
 from data_handler import handler
+
+from utils.eye_checker import process_image
 
 test_properties = {
     "identification": 8849382934,
@@ -33,7 +36,11 @@ def test_db():
     # search_by_vector("Person", newVec, 2)
     # print_collection("Person")
 
+<<<<<<< HEAD
    # insert_into_collection("Person", test_vector, test_properties)
+=======
+    # insert_into_collection("Person", test_vector, test_properties)
+>>>>>>> ee9625b724eda9d75fff35101ee6433344ae6761
 
     print_collection("Person")
     search_by_vector("Person", test_vector, 1)
@@ -52,7 +59,12 @@ def main():
     # test_encryption()
     # client = connect_database()
     # client.collections.delete("Person")
-    test_db()
+    # test_db()
+
+    predictor_path = "shape-predictor/shape_predictor_68_face_landmarks.dat"
+    image_path = "img/beast.jpg"
+    eyes_open = process_image(image_path, predictor_path, ear_threshold=0.3)
+    print(eyes_open)
 
 
 if __name__ == "__main__":
