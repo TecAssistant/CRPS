@@ -7,7 +7,6 @@ from weaviate.classes.init import Auth
 from utils.encryption import encrypt_dictionary, decrypt_data
 
 def connect_database():
-<<<<<<< HEAD
     client = connect_remote_database()
     # client = connect_local_database()
     return client
@@ -30,11 +29,9 @@ def connect_local_database():
     host = os.getenv("DATABASE_HOST", "localhost")
     port = int(os.getenv("DATABASE_PORT", 8090))
     grpc_port = int(os.getenv("DATABASE_GRPC_PORT", 50051))
-=======
-	client = connect_remote_database()
-	# client = connect_local_database()
-	return client
->>>>>>> ee9625b724eda9d75fff35101ee6433344ae6761
+    # client = connect_remote_database()
+    client = connect_local_database()
+    return client
 
 
 def connect_remote_database():
