@@ -21,18 +21,8 @@ def eye_aspect_ratio(eye):
     ear = (A + B) / (2.0 * C)
     return ear
 
-def check_closed_eye(eye_aspect_ratio) -> bool:
-    """
-    Verifica si el EAR es menor que el umbral definido, lo que indica que el ojo está cerrado.
-    
-    :param eye_aspect_ratio: Valor EAR calculado.
-    :return: True si está cerrado, False en caso contrario.
-    """
-    eye_ar_thresh = 0.2
-    return eye_aspect_ratio < eye_ar_thresh
 
-
-def process_image(image_path, predictor_path, ear_threshold=0.3):
+def process_image(image_path, detector, predictor, ear_threshold=0.3):
     """
     Procesa una imagen para detectar rostros, calcular el EAR para ambos ojos y determinar 
     si los ojos están abiertos o cerrados, retornando un valor booleano.
@@ -43,8 +33,7 @@ def process_image(image_path, predictor_path, ear_threshold=0.3):
     :return: True si los ojos están abiertos, False si están cerrados, o None si no se detecta ningún rostro.
     """
     # Inicializar el detector de rostros y el predictor de landmarks.
-    detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(predictor_path)
+
     
     # Cargar la imagen y convertirla a escala de grises.
     image = cv2.imread(image_path)

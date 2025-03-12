@@ -1,5 +1,6 @@
 import weaviate
 import os
+import dlib
 from weaviate.classes.config import Property, DataType
 from weaviate.classes.query import MetadataQuery
 from utils.embeddings import preload_image, generate_artificial_embedding
@@ -14,6 +15,10 @@ from utils.encryption import encrypt_data, encrypt_dictionary, decrypt_dictionar
 from data_handler import handler
 
 from utils.eye_checker import process_image
+from yunet.detect_face import process_image_with_yunet
+
+predictor_path = "shape-predictor/shape_predictor_68_face_landmarks.dat"
+yunet_path = "yunet/model/face_detection_yunet_2023mar.onnx"
 
 test_properties = {
     "identification": 12345678,
@@ -25,6 +30,8 @@ test_properties = {
     "last_update_date": "2025-010-04T00:00:00Z",
 }
 # print([generate_artificial_embedding(2048) for _ in range(10)])
+detector = dlib.get_frontal_face_detector()
+predictor = dlib.shape_predictor(predictor_path)
 
 test_vector = generate_artificial_embedding(2048)
 
@@ -52,11 +59,15 @@ def main():
     # client = connect_database()
     # client.collections.delete("Person")
     # test_db()
+    
 
-    predictor_path = "shape-predictor/shape_predictor_68_face_landmarks.dat"
-    image_path = "img/closed-eyes.jpg"
-    eyes_open = process_image(image_path, predictor_path, ear_threshold=0.3)
-    print(eyes_open)
+    image_path = "img/beast.jpg"
+    output_path = "images/converted/bbox_image.jpg"
+    process_image_with_yunet(image_path, output_path, yunet_path)
+
+    # for x in range(1,10):
+    #     eyes_open = process_image(image_path,detector, predictor, ear_threshold=0.3)
+    #     print(eyes_open)
 
 
 if __name__ == "__main__":
@@ -64,7 +75,8 @@ if __name__ == "__main__":
     # handler.load_dataset(dataset_path, 20)
     # handler.test_images_loaded(dataset_path, 20)
     # print(preload_image("beast.json", "img/beast.jpg", "output/"))
-    #insert_into_collection("Person", adrian, test_properties)
+    # insert_into_collection("Person", adrian, test_properties)
 
-    #search_by_vector("Person", adrian, 10)
-    # main()
+    # search_by_vector("Person", adrian, 10)
+
+    main()
