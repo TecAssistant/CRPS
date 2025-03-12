@@ -11,6 +11,7 @@ from database.weaviate import (
 )
 from database.collections import create_person_collection
 from utils.encryption import encrypt_data, encrypt_dictionary, decrypt_dictionary
+from data_handler import handler
 
 from utils.eye_checker import process_image
 
@@ -35,7 +36,11 @@ def test_db():
     # search_by_vector("Person", newVec, 2)
     # print_collection("Person")
 
+<<<<<<< HEAD
+   # insert_into_collection("Person", test_vector, test_properties)
+=======
     # insert_into_collection("Person", test_vector, test_properties)
+>>>>>>> ee9625b724eda9d75fff35101ee6433344ae6761
 
     print_collection("Person")
     search_by_vector("Person", test_vector, 1)
@@ -63,4 +68,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #dataset_path = "data_handler/dataset"
+    #handler.load_dataset(dataset_path, 1)
+    print(preload_image("beast.json", "img/beast.jpg", "output/"))
+   # main()
