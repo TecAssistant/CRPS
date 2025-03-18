@@ -1,6 +1,8 @@
 
 import cv2
 import time
+
+from yunet.detect_face import process_image_with_yunet
 def video_capture(model):
     cap = cv2.VideoCapture(0)
 
@@ -47,13 +49,11 @@ def video_capture(model):
                 x, y, w, h, score = detection[:5]
                 area = w * h
 
-                # --- MODIFICACIONES AGREGADAS ---
                 # Clamping de las coordenadas para que estén dentro del frame
                 x = int(max(x, 0))
                 y = int(max(y, 0))
                 w = int(min(w, input_width - x))
                 h = int(min(h, input_height - y))
-                # --- FIN DE MODIFICACIONES ---
 
                 # Si el bounding box es muy pequeño, se considera que el rostro está lejos
                 if w < min_width or h < min_height or (w * h) < min_area:
@@ -62,12 +62,14 @@ def video_capture(model):
                     print("Rostro detectado:", detection)
                     # Extrae la región de la imagen donde se encuentra el rostro
                     face_img = resized_frame[y:y+h, x:x+w]
-                    # --- MODIFICACIONES AGREGADAS ---
+
+                    # Implement the process image logic here
                     if face_img.size > 0:
-                        cv2.imshow("Rostro", face_img)
+                        # cv2.imshow("Rostro", face_img)
+                        cropped_face, image_with_bbox = process_image_with_yunet(face_img, model)
+                        cv2.imshow("Rostro", cropped_face)
                     else:
                         print("La región del rostro está vacía.")
-                    # --- FIN DE MODIFICACIONES ---
             else:
                 print("No se detectó ningún rostro.")
 
