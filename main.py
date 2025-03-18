@@ -16,6 +16,8 @@ from data_handler import handler
 
 from utils.eye_checker import process_image
 from yunet.detect_face import process_image_with_yunet
+from video_recognition.video_recognition import video_capture
+from yunet.yunet import YuNet
 
 predictor_path = "shape-predictor/shape_predictor_68_face_landmarks.dat"
 yunet_path = "yunet/model/face_detection_yunet_2023mar.onnx"
@@ -59,11 +61,15 @@ def main():
     # client = connect_database()
     # client.collections.delete("Person")
     # test_db()
+
+    face_detector = YuNet(modelPath=yunet_path, inputSize=[320, 320], confThreshold=0.6, nmsThreshold=0.3)
+
+    video_capture(face_detector)
     
 
-    image_path = "img/beast.jpg"
-    output_path = "images/converted/bbox_image.jpg"
-    process_image_with_yunet(image_path, output_path, yunet_path)
+    # image_path = "img/beast.jpg"
+    # output_path = "images/converted/bbox_image.jpg"
+    # process_image_with_yunet(image_path, output_path, yunet_path)
 
     # for x in range(1,10):
     #     eyes_open = process_image(image_path,detector, predictor, ear_threshold=0.3)
@@ -78,5 +84,4 @@ if __name__ == "__main__":
     # insert_into_collection("Person", adrian, test_properties)
 
     # search_by_vector("Person", adrian, 10)
-
     main()
