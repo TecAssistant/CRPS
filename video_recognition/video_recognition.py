@@ -2,6 +2,9 @@
 import cv2
 import time
 from yunet.detect_face import process_image_with_yunet
+from utils.embeddings import image_to_embedding
+from database.weaviate import search_by_vector
+
 def video_capture(model):
     """
     Capture video from the camera, process frames in real-time, and detect faces using the provided model.
@@ -47,7 +50,7 @@ def video_capture(model):
         cv2.imshow("Captured Frame", frame)
 
         current_time = time.time()
-        if current_time - last_capture_time >= 1:
+        if current_time - last_capture_time >= 3:
             frame_to_process = frame.copy()  # Save a copy to process later
             last_capture_time = current_time
             # Processing here
@@ -79,7 +82,12 @@ def video_capture(model):
                     # Implement the process image logic here:
                     if face_img.size > 0:
                         cropped_face, image_with_bbox = process_image_with_yunet(face_img, model)
-                        cv2.imshow("Face", cropped_face)
+                        if cropped_face is not None and cropped_face.shape[0] > 0 and cropped_face.shape[1] > 0:
+                            embedding = image_to_embedding(cropped_face)
+                            search_by_vector("Person", embedding, 10)
+                            cv2.imshow("Face", cropped_face)
+                        else:
+                            print("No se obtuvo un recorte válido de la cara.")
                     else:
                         print("The face region is empty.")
             else:
