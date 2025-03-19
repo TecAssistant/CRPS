@@ -6,7 +6,7 @@ from utils.embeddings import image_to_embedding
 from database.weaviate import search_by_vector
 from utils.facenet import preload_image_to_embedding
 
-def video_capture(model):
+def video_capture(model, collection):
     """
     Capture video from the camera, process frames in real-time, and detect faces using the provided model.
 
@@ -86,7 +86,7 @@ def video_capture(model):
                         if cropped_face is not None and cropped_face.shape[0] > 0 and cropped_face.shape[1] > 0:
                             # embedding = image_to_embedding(cropped_face)
                             embedding = preload_image_to_embedding(cropped_face)
-                            search_by_vector("Person", embedding, 10)
+                            search_by_vector(collection, embedding, 10)
                             cv2.imshow("Face", cropped_face)
                         else:
                             print("No se obtuvo un recorte válido de la cara.")

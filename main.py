@@ -35,6 +35,8 @@ test_properties = {
     "registration_date": "2024-05-04T00:00:00Z",
     "last_update_date": "2025-010-04T00:00:00Z",
 }
+
+collection = "Person"
 # print([generate_artificial_embedding(2048) for _ in range(10)])
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(predictor_path)
@@ -49,7 +51,7 @@ def test_db():
     # search_by_vector("Person", newVec, 2)
     # print_collection("Person")
     # newVec = preload_image("beast.json", "img/beast.jpg", "output/")
-    search_by_vector("Person", test_vector, 1)
+    search_by_vector(collection, test_vector, 1)
 
 
 def test_encryption():
@@ -70,11 +72,11 @@ def upload_img(face_detector):
     #     cv2.destroyAllWindows()                # Cierra todas las ventanas abiertas por OpenCV
     # embedding_img = image_to_embedding(cropped_face)
     embedding_img = preload_image_to_embedding(cropped_face)
-    insert_into_collection("Person",embedding_img, test_properties)
-    search_by_vector("Person", embedding_img, 10)
+    insert_into_collection(collection,embedding_img, test_properties)
+    search_by_vector(collection, embedding_img, 10)
 
 def video(model):
-    video_capture(model)
+    video_capture(model, collection)
     pass
 
 def check_eyes():
@@ -89,8 +91,8 @@ def main():
     # client.collections.delete("Person")
     # test_db()
     face_detector = YuNet(modelPath=yunet_path, inputSize=[320, 320], confThreshold=0.6, nmsThreshold=0.3)
-    video(face_detector)
-    # upload_img(face_detector)
+    # video(face_detector)
+    upload_img(face_detector)
 
     
 
