@@ -8,6 +8,12 @@ import json
 
 model = ResNet50(weights="imagenet", include_top=False, pooling="avg")
 
+def normalize_embedding(embedding):
+    norm = np.linalg.norm(embedding)
+    if norm == 0:
+        return embedding
+    return embedding / norm
+
 
 def preload_image(file_name, image_path, save_path):
     img = image.load_img(
@@ -17,9 +23,10 @@ def preload_image(file_name, image_path, save_path):
     x = np.expand_dims(x, axis=0)
     x = preprocess_input(x)
     embedding = model.predict(x)
-    embedding_list = embedding[0].tolist()
-    embedding_json = json.dumps(embedding_list)
-    return embedding_list
+    normalized_embedding = normalize_embedding(embedding[0])
+    # embedding_list = embedding[0].tolist()
+    embedding_json = json.dumps(normalized_embedding)
+    return normalized_embedding.tolist()
     # save_json(file_name, save_path, embedding_json)
 
 
@@ -47,9 +54,14 @@ def image_to_embedding(img_input):
     
     # Obtener el embedding
     embedding = model.predict(x)
+    normalized_embedding = normalize_embedding(embedding[0])
     
     # Convertir a lista y retornar
-    return embedding[0].tolist()
+    return normalized_embedding.tolist()
+
+def image_to_embedding_facenet():
+    # Implement here the facenet function
+    pass
 
 
 def generate_artificial_embedding(length):

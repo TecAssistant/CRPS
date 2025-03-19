@@ -4,6 +4,7 @@ import time
 from yunet.detect_face import process_image_with_yunet
 from utils.embeddings import image_to_embedding
 from database.weaviate import search_by_vector
+from utils.facenet import preload_image_to_embedding
 
 def video_capture(model):
     """
@@ -83,7 +84,8 @@ def video_capture(model):
                     if face_img.size > 0:
                         cropped_face, image_with_bbox = process_image_with_yunet(face_img, model)
                         if cropped_face is not None and cropped_face.shape[0] > 0 and cropped_face.shape[1] > 0:
-                            embedding = image_to_embedding(cropped_face)
+                            # embedding = image_to_embedding(cropped_face)
+                            embedding = preload_image_to_embedding(cropped_face)
                             search_by_vector("Person", embedding, 10)
                             cv2.imshow("Face", cropped_face)
                         else:

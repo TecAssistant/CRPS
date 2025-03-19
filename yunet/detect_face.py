@@ -15,10 +15,12 @@ def process_image_with_yunet(image, model, output_path=None):
       - image_with_bbox: Imagen original con la caja dibujada (o la imagen original si falla).
     """
     try:
-        gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+        # gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
         # equalized_img = cv.equalizeHist(gray)
 
-        processed_image = cv.cvtColor(gray, cv.COLOR_GRAY2BGR)
+        # processed_image = cv.cvtColor(gray, cv.COLOR_GRAY2BGR)
+
+        processed_image = image
         
         orig_h, orig_w = processed_image.shape[:2]
         

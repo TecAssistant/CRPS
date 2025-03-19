@@ -1,3 +1,4 @@
+from keras.src.utils.image_utils import pil_image
 import weaviate
 import os
 import dlib
@@ -11,6 +12,7 @@ from database.weaviate import (
     print_collection,
     search_by_vector,
 )
+from utils.facenet import preload_image_to_embedding
 from database.collections import create_person_collection
 from utils.encryption import encrypt_data, encrypt_dictionary, decrypt_dictionary
 from data_handler import handler
@@ -26,7 +28,7 @@ yunet_path = "yunet/model/face_detection_yunet_2023mar.onnx"
 
 test_properties = {
     "identification": 208580617,
-    "name": "Isaac Ramirez 2",
+    "name": "Adrian Villalobos 4K (COLOR DE VERDAD)",
     "age": 20,
     "role": "Student",
     "phone_number": "+506 39292292",
@@ -58,29 +60,40 @@ def test_encryption():
     print(decrypted_dictionary)
 
 
+def upload_img(face_detector):
+    image_path = "img/Adrian.png"
+    isaac = cv2.imread(image_path)
+    cropped_face, bbox_face = process_image_with_yunet(isaac, face_detector)
+    # if cropped_face is not None:
+    #     cv2.imshow("Cropped Face", cropped_face)  # Muestra la imagen en una ventana llamada "Cropped Face"
+    #     cv2.waitKey(0)                         # Espera hasta que presiones una tecla
+    #     cv2.destroyAllWindows()                # Cierra todas las ventanas abiertas por OpenCV
+    # embedding_img = image_to_embedding(cropped_face)
+    embedding_img = preload_image_to_embedding(cropped_face)
+    insert_into_collection("Person",embedding_img, test_properties)
+    search_by_vector("Person", embedding_img, 10)
+
+def video(model):
+    video_capture(model)
+    pass
+
+def check_eyes():
+    pass
+    # for x in range(1,10):
+    #     eyes_open = process_image(image_path,detector, predictor, ear_threshold=0.3)
+    #     print(eyes_open)
+
 def main():
     # test_db()
     # test_encryption()
     # client.collections.delete("Person")
     # test_db()
-
     face_detector = YuNet(modelPath=yunet_path, inputSize=[320, 320], confThreshold=0.6, nmsThreshold=0.3)
+    video(face_detector)
+    # upload_img(face_detector)
 
-    video_capture(face_detector)
     
 
-    # image_path = "img/Isaac.png"
-    # isaac = cv2.imread(image_path)
-    # cropped_face, bbox_face = process_image_with_yunet(isaac, face_detector)
-    # embedding_img = image_to_embedding(cropped_face)
-    # insert_into_collection("Person",embedding_img, test_properties)
-    # search_by_vector("Person", embedding_img, 10)
-
-    # print_collection("Person")
-
-    # for x in range(1,10):
-    #     eyes_open = process_image(image_path,detector, predictor, ear_threshold=0.3)
-    #     print(eyes_open)
 
 
 if __name__ == "__main__":
