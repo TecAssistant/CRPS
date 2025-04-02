@@ -19,7 +19,7 @@ from data_handler import handler
 
 from utils.eye_checker import process_image
 from yunet.detect_face import process_image_with_yunet
-from video_recognition.video_recognition import video_capture
+from video_recognition.video_recognition import video_capture_threaded
 from yunet.yunet import YuNet
 
 
@@ -28,7 +28,7 @@ yunet_path = "yunet/model/face_detection_yunet_2023mar.onnx"
 
 test_properties = {
     "identification": 208580617,
-    "name": "Adrian Villalobos 4K (COLOR DE VERDAD)",
+    "name": "Isaac Ramirez",
     "age": 20,
     "role": "Student",
     "phone_number": "+506 39292292",
@@ -63,7 +63,7 @@ def test_encryption():
 
 
 def upload_img(face_detector):
-    image_path = "img/Adrian.png"
+    image_path = "img/Isaac.png"
     isaac = cv2.imread(image_path)
     cropped_face, bbox_face = process_image_with_yunet(isaac, face_detector)
     # if cropped_face is not None:
@@ -76,8 +76,7 @@ def upload_img(face_detector):
     search_by_vector(collection, embedding_img, 10)
 
 def video(model):
-    video_capture(model, collection)
-    pass
+    video_capture_threaded(model, collection)
 
 def check_eyes():
     pass
@@ -91,8 +90,10 @@ def main():
     # client.collections.delete("Person")
     # test_db()
     face_detector = YuNet(modelPath=yunet_path, inputSize=[320, 320], confThreshold=0.6, nmsThreshold=0.3)
-    # video(face_detector)
-    upload_img(face_detector)
+    # create_person_collection()
+    # upload_img(face_detector)
+    video(face_detector)
+    # upload_img(face_detector)
 
     
 
