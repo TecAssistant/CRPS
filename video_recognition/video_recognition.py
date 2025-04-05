@@ -1,4 +1,3 @@
-
 import cv2
 import time
 from yunet.detect_face import process_image_with_yunet

@@ -3,7 +3,7 @@
 import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QFrame, QGroupBox, QGridLayout
+    QLabel, QPushButton, QFrame, QTabWidget, QGroupBox, QGridLayout
 )
 from PyQt5.QtGui import QFont, QCloseEvent
 from PyQt5.QtCore import Qt
@@ -11,26 +11,58 @@ from PyQt5.QtGui import QGuiApplication
 
 # Importamos nuestra lógica de cámara
 from .ui_video import CameraHandler
-
+from .register_tab import RegisterTab
 
 class MainWindow(QMainWindow):
     def __init__(self, model=None, collection=None):
         super().__init__()
-        self.setWindowTitle("PyQt5 - Camera + Info")
+        self.setWindowTitle("PyQt5 - Camera + Info with Tabs")
         self.setMinimumSize(900, 500)
 
         self.camera_handler = None
         self.model = model
         self.collection = collection
 
+        # Widget central con un layout principal
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
+        main_layout = QVBoxLayout(central_widget)
 
-        main_layout = QHBoxLayout(central_widget)
+        # QTabWidget para tener dos pestañas
+        self.tab_widget = QTabWidget()
+        main_layout.addWidget(self.tab_widget)
 
-        # ------------------------------------------------------------------
-        # LEFT SECTION: CAMERA
-        # ------------------------------------------------------------------
+        # 1) Pestaña "Camera & Info" (layout tuyo original)
+        self.camera_info_tab = self.create_camera_info_tab()
+        self.tab_widget.addTab(self.camera_info_tab, "Camera & Info")
+
+        # 2) Pestaña "RegisterTab" (importado desde register_tab.py)
+        #    Iniciamos sin camera_handler; si quieres tomar foto de la misma cámara,
+        #    luego le asignaremos self.camera_handler cuando inicies la cámara.
+        self.register_tab = RegisterTab(
+            model=self.model,
+            collection=self.collection,
+            camera_handler=None
+        )
+        self.tab_widget.addTab(self.register_tab, "Register")
+
+        self.centerOnScreen()
+
+    # ------------------------------------------------------------------
+    # CREACIÓN DE LA PESTAÑA "CAMERA & INFO"
+    # (Conservamos exactamente tu layout anterior)
+    # ------------------------------------------------------------------
+    def create_camera_info_tab(self):
+        """
+        Retorna un QWidget que contiene tu layout "Cámara a la izquierda" y
+        "Información a la derecha", tal como pediste.
+        """
+        tab = QWidget()  
+        camera_info_layout = QHBoxLayout(tab)
+
+        # -----------------------------
+        # SECCIÓN IZQUIERDA: CÁMARA
+        # -----------------------------
         left_section = QVBoxLayout()
 
         lbl_camera_title = QLabel("Camera")
@@ -60,18 +92,28 @@ class MainWindow(QMainWindow):
 
         left_section.addWidget(camera_frame)
 
+        buttons_layout = QHBoxLayout()
+
         # Button to start the camera
         btn_start_camera = QPushButton("Start Camera")
         btn_start_camera.setFixedWidth(150)
         btn_start_camera.clicked.connect(self.handle_start_camera)
-        left_section.addWidget(btn_start_camera, alignment=Qt.AlignCenter)
+        buttons_layout.addWidget(btn_start_camera)
+
+        btn_stop_camera = QPushButton("Stop Camera")
+        btn_stop_camera.setFixedWidth(150)
+        btn_stop_camera.clicked.connect(self.handle_stop_camera)
+        buttons_layout.addWidget(btn_stop_camera)
+        
+        
+        left_section.addLayout(buttons_layout)
 
         left_section.addStretch()
-        main_layout.addLayout(left_section)
+        camera_info_layout.addLayout(left_section)
 
-        # ------------------------------------------------------------------
-        # RIGHT SECTION: USER INFORMATION
-        # ------------------------------------------------------------------
+        # -----------------------------
+        # SECCIÓN DERECHA: INFORMACIÓN
+        # -----------------------------
         right_section = QVBoxLayout()
 
         lbl_info_title = QLabel("Information")
@@ -120,11 +162,13 @@ class MainWindow(QMainWindow):
         right_section.addWidget(info_group)
 
         right_section.addStretch()
-        main_layout.addLayout(right_section)
+        camera_info_layout.addLayout(right_section)
 
-        central_widget.setLayout(main_layout)
-        self.centerOnScreen()
+        return tab
 
+    # ------------------------------------------------------------------
+    # LÓGICA DE LA CÁMARA (IGUAL QUE ANTES)
+    # ------------------------------------------------------------------
     def handle_start_camera(self):
         """Triggered when the user clicks on 'Start Camera'."""
         if not self.camera_handler:
@@ -175,9 +219,18 @@ class MainWindow(QMainWindow):
         super().closeEvent(a0)
 
     def centerOnScreen(self):
+        """Center the window on the primary screen."""
         screen = QGuiApplication.primaryScreen()
         if screen is not None:
             screen_center = screen.availableGeometry().center()
             frame_geom = self.frameGeometry()
             frame_geom.moveCenter(screen_center)
             self.move(frame_geom.topLeft())
+
+    def handle_stop_camera(self):
+        """Detiene la cámara y libera el CameraHandler."""
+        if self.camera_handler:
+            self.camera_handler.stop()
+            self.camera_handler = None
+            print("Camera stopped.")
+
