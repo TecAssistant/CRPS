@@ -55,30 +55,37 @@ def print_collection(collection):
     client.close()
 
 
-def search_by_vector(collection, vector, limit):
+def search_by_vector(collection, vector, limit=10):
+    """
+    Hace la búsqueda en Weaviate usando 'near_vector' y retorna
+    SOLO el primer resultado (como un dict con las propiedades desencriptadas).
+    Si no hay resultados, retorna None.
+    """
     client = connect_database()
-    collection = client.collections.get(collection)
-    response = collection.query.near_vector(
+    my_collection = client.collections.get(collection)
+
+    response = my_collection.query.near_vector(
         near_vector=vector,
         limit=limit,
         return_metadata=MetadataQuery(distance=True),
     )
 
-    print("-" * 40)
-    for o in response.objects:
-        properties = o.properties
-        distance = o.metadata.distance
+    if not response.objects:
+        client.close()
+        return None
 
-        for key, value in properties.items():
-            decrypted_value = value
-            if value is not None:
-                decrypted_value = decrypt_data(value)
-            print(f"{key.capitalize()}: {decrypted_value}")
+    # Tomamos SOLO el primer resultado
+    first_obj = response.objects[0]
+    distance = first_obj.metadata.distance
+    confidence = (1 - distance) * 100 if distance is not None else None
 
-        if distance is not None:
-            confidence = (1 - distance) * 100
-            print(f"Confidence: {confidence:.2f}%")
-
-        print("-" * 40)
+    user_data = {}
+    for key, value in first_obj.properties.items():
+        decrypted_value = decrypt_data(value) if value else None
+        user_data[key] = decrypted_value
+    
+    # Guardamos el "confidence" también
+    user_data["confidence"] = confidence
 
     client.close()
+    return user_data

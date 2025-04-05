@@ -11,7 +11,10 @@ from utils.encryption import encrypt_dictionary, decrypt_dictionary
 from yunet.detect_face import process_image_with_yunet
 from video_recognition.video_recognition import video_capture_threaded
 from yunet.yunet import YuNet
+from ui.ui import MainWindow
+import sys
 
+from PyQt5 import QtWidgets
 
 dataset_path = "data_handler/dataset"
 predictor_path = "shape-predictor/shape_predictor_68_face_landmarks.dat"
@@ -86,8 +89,12 @@ def video(model):
 
 
 def main():
-    video(face_detector)
+    # video(face_detector)
+    app = QtWidgets.QApplication(sys.argv)
+    window = MainWindow(model=face_detector, collection=collection)
+    window.show()
 
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
