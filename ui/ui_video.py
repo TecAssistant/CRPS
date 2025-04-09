@@ -5,14 +5,15 @@ import cv2
 
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QImage, QPixmap
-
+import os
 # Ajusta estos imports según tu estructura
 from yunet.detect_face import process_image_with_yunet
 from utils.facenet import preload_image_to_embedding
 from database.weaviate import search_by_vector
+from utils.drive_utils import upload_image_to_drive
 
 
-def processing_worker(processing_queue, stop_event, model, collection, result_queue):
+def processing_worker(processing_queue, stop_event, model, collection, result_queue, drive):
     """
     Hilo de trabajo que toma frames de la cola y realiza:
       - Detección facial (YuNet).
@@ -57,6 +58,24 @@ def processing_worker(processing_queue, stop_event, model, collection, result_qu
                         embedding = preload_image_to_embedding(cropped_face)
                         # Llamamos a Weaviate y obtenemos el dict con user_data
                         user_data = search_by_vector(collection, embedding, 10)
+
+                        temp_image_path = "temp_face.jpg"
+                        if cv2.imwrite(temp_image_path, cropped_face):
+                            try:
+                                # Sólo intentamos subir si la autenticación fue exitosa.
+                                if drive is not None:
+                                    upload_image_to_drive(temp_image_path, folder_id, drive=drive)
+
+                            except Exception as e:
+                                print(f"Error al subir la imagen: {e}")
+
+                            finally:
+                                # Borramos el archivo temporal
+                                if os.path.exists(temp_image_path):
+                                    os.remove(temp_image_path)
+                        else:
+                            print("Error al guardar la imagen temporal.")
+
                         # Si hay resultado, lo metemos a result_queue
                         if user_data:
                             result_queue.put(user_data)
@@ -73,10 +92,11 @@ def processing_worker(processing_queue, stop_event, model, collection, result_qu
 
 
 class CameraHandler:
-    def __init__(self, model, collection, camera_label, enqueue_interval=3.0):
+    def __init__(self, model, collection, camera_label, enqueue_interval=3.0, drive=None):
         self.model = model
         self.collection = collection
         self.camera_label = camera_label
+        self.drive = drive
 
         # Control de cámara
         self.cap = None
@@ -118,7 +138,7 @@ class CameraHandler:
             self.worker_thread = threading.Thread(
                 target=processing_worker,
                 args=(self.processing_queue, self.stop_event,
-                      self.model, self.collection, self.result_queue),
+                      self.model, self.collection, self.result_queue, self.drive),
                 daemon=True
             )
             self.worker_thread.start()

@@ -12,6 +12,7 @@ from yunet.detect_face import process_image_with_yunet
 from video_recognition.video_recognition import video_capture_threaded
 from yunet.yunet import YuNet
 from ui.ui import MainWindow
+from utils.drive_utils import authenticate_drive
 import sys
 
 from PyQt5 import QtWidgets
@@ -90,8 +91,9 @@ def video(model):
 
 def main():
     # video(face_detector)
+    drive = authenticate_drive()
     app = QtWidgets.QApplication(sys.argv)
-    window = MainWindow(model=face_detector, collection=collection)
+    window = MainWindow(model=face_detector, collection=collection, drive=drive)
     window.show()
 
     sys.exit(app.exec_())

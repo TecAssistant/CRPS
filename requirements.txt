@@ -8,3 +8,4 @@ PyQt5==5.15.11
 opencv-python==4.11.0.86
 keras-facenet==0.3.2
 opencv-python-headless==4.11.0.86
+PyDrive2==1.21.3

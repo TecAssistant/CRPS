@@ -14,7 +14,7 @@ from .ui_video import CameraHandler
 from .register_tab import RegisterTab
 
 class MainWindow(QMainWindow):
-    def __init__(self, model=None, collection=None):
+    def __init__(self, model=None, collection=None, drive=None):
         super().__init__()
         self.setWindowTitle("PyQt5 - Camera + Info with Tabs")
         self.setMinimumSize(900, 500)
@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
         self.camera_handler = None
         self.model = model
         self.collection = collection
+        self.drive = drive
 
         # Widget central con un layout principal
         central_widget = QWidget(self)
@@ -177,7 +178,8 @@ class MainWindow(QMainWindow):
                 model=self.model,
                 collection=self.collection,
                 camera_label=self.camera_feed_label,
-                enqueue_interval=3.0
+                enqueue_interval=3.0,
+                drive=self.drive
             )
             # Connect its 'on_new_user_data' to our local method
             self.camera_handler.on_new_user_data = self.updateUIWithUserData
