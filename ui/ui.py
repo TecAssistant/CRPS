@@ -1,6 +1,7 @@
 # ui.py
 
 import sys
+import os
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QFrame, QTabWidget, QGroupBox, QGridLayout
@@ -18,6 +19,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("PyQt5 - Camera + Info with Tabs")
         self.setMinimumSize(900, 500)
+        parent_folder_id = os.getenv("DRIVE_PARENT_FOLDER_ID")
+        if not parent_folder_id:
+            raise RuntimeError("Falta DRIVE_PARENT_FOLDER_ID en .env")
 
         self.camera_handler = None
         self.model = model
@@ -43,7 +47,8 @@ class MainWindow(QMainWindow):
         self.register_tab = RegisterTab(
             model=self.model,
             collection=self.collection,
-            drive=self.drive
+            drive=self.drive,
+            drive_parent_folder_id=parent_folder_id
         )
         self.tab_widget.addTab(self.register_tab, "Register")
 

@@ -16,6 +16,10 @@ from utils.drive_utils import authenticate_drive
 import sys
 
 from PyQt5 import QtWidgets
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 dataset_path = "data_handler/dataset"
 predictor_path = "shape-predictor/shape_predictor_68_face_landmarks.dat"
@@ -49,14 +53,14 @@ def database():
     # client.collections.delete("Person")
 
     # Print a collection
-    print_collection(collection)
+    # print_collection(collection)
 
     # Create user on weaviate
-    create_user_weaviate(face_detector)
+    # create_user_weaviate(face_detector)
 
     # Search by vector
     vector = {}
-    search_by_vector(collection, vector, 1)
+    # search_by_vector(collection, vector, 1)
 
 
     
@@ -91,9 +95,10 @@ def video(model):
 
 def main():
     # video(face_detector)
-    # drive = authenticate_drive()
+    # database()
+    drive = authenticate_drive()
     app = QtWidgets.QApplication(sys.argv)
-    window = MainWindow(model=face_detector, collection=collection, drive=None)
+    window = MainWindow(model=face_detector, collection=collection, drive=drive)
     window.show()
 
     sys.exit(app.exec_())

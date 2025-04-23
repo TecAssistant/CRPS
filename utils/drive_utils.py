@@ -3,20 +3,30 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
 
-def authenticate_drive():
+def authenticate_drive(
+    client_secrets_file: str = "client_secrets.json",
+    credentials_file: str    = "credentials.json",
+    local_port: int          = 8090
+):
     gauth = GoogleAuth()
-    
-    # Intenta cargar credenciales guardadas previamente
-    cred_path = "credentials.json"
-    if os.path.exists(cred_path):
-        gauth.LoadCredentialsFile(cred_path)
-    
-    # Si no existe o es inválido, se realiza el flujo de autenticación
+    gauth.settings['client_config_file']    = client_secrets_file
+    gauth.settings['save_credentials_file'] = credentials_file
+
+    # intenta cargar token viejo
+    if os.path.exists(credentials_file):
+        try:
+            gauth.LoadCredentialsFile(credentials_file)
+        except Exception:
+            os.remove(credentials_file)
+
+    # si no hay token válido, arranca el flow
     if not gauth.credentials or gauth.credentials.invalid:
-        gauth.LocalWebserverAuth()
-        gauth.SaveCredentialsFile(cred_path)
-    
+        print(f"Abriendo navegador en http://localhost:{local_port}")
+        gauth.LocalWebserverAuth(port=local_port)
+        gauth.SaveCredentialsFile(credentials_file)
+
     drive = GoogleDrive(gauth)
+    print("Autenticación y token OK")
     return drive
 
 
@@ -32,5 +42,13 @@ def upload_image_to_drive(image_path, folder_id, drive=None):
         'parents': [{'id': folder_id}]
     })
     file_drive.SetContentFile(image_path)
-    file_drive.Upload()
-    print(f"Imagen {os.path.basename(image_path)} subida a Google Drive.")
+    try:
+        file_drive.Upload()
+        print(f"Imagen {os.path.basename(image_path)} subida a Google Drive.")
+    finally:
+        handle = getattr(file_drive, 'content', None)
+        try:
+            if handle:
+                handle.close()
+        except Exception:
+            pass
