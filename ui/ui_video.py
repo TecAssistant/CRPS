@@ -92,7 +92,7 @@ def processing_worker(processing_queue, stop_event, model, collection, result_qu
 
 
 class CameraHandler:
-    def __init__(self, model, collection, camera_label, enqueue_interval=3.0, drive=None):
+    def __init__(self, model, collection, camera_label, enqueue_interval=3.0, drive=None, camera_index: int = 0):
         self.model = model
         self.collection = collection
         self.camera_label = camera_label
@@ -119,12 +119,14 @@ class CameraHandler:
         # Callback que definiremos en la ventana para reaccionar a nuevos datos
         self.on_new_user_data = None
 
+        self.camera_index = camera_index
+
     def start_camera(self):
         if self.cap and self.cap.isOpened():
             print("La cámara ya está activa.")
             return
 
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(self.camera_index)
         if not self.cap.isOpened():
             print("No se pudo abrir la cámara.")
             return

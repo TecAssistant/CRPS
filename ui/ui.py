@@ -13,6 +13,8 @@ from PyQt5.QtGui import QGuiApplication
 # Importamos nuestra lógica de cámara
 from .ui_video import CameraHandler
 from .register_tab import RegisterTab
+import cv2
+from PyQt5.QtWidgets import QComboBox
 
 class MainWindow(QMainWindow):
     def __init__(self, model=None, collection=None, drive=None):
@@ -70,6 +72,21 @@ class MainWindow(QMainWindow):
         # SECCIÓN IZQUIERDA: CÁMARA
         # -----------------------------
         left_section = QVBoxLayout()
+
+        # ==== Selector de cámara ==== #
+        selector_layout = QHBoxLayout()
+        selector_layout.addWidget(QLabel("Camera:"))
+        self.cam_selector_info = QComboBox()
+        for i in range(5):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                self.cam_selector_info.addItem(f"Camera {i}", i)
+                cap.release()
+        if self.cam_selector_info.count() == 0:
+            self.cam_selector_info.addItem("Camera 0", 0)
+        selector_layout.addWidget(self.cam_selector_info)
+        left_section.addLayout(selector_layout)
+        # ============================= #
 
         lbl_camera_title = QLabel("Camera")
         lbl_camera_title.setFont(QFont("Arial", 14, QFont.Bold))
@@ -179,12 +196,14 @@ class MainWindow(QMainWindow):
         """Triggered when the user clicks on 'Start Camera'."""
         if not self.camera_handler:
             # Create a CameraHandler only the first time
+            cam_idx = self.cam_selector_info.currentData()
             self.camera_handler = CameraHandler(
                 model=self.model,
                 collection=self.collection,
                 camera_label=self.camera_feed_label,
                 enqueue_interval=3.0,
-                drive=self.drive
+                drive=self.drive,
+                camera_index=cam_idx
             )
             # Connect its 'on_new_user_data' to our local method
             self.camera_handler.on_new_user_data = self.updateUIWithUserData
