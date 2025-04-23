@@ -132,6 +132,7 @@ class RegisterTab(QWidget):
 
         # Detén el feed para no seguir guardando
         self.video_handler.stop_camera()
+        self.video_handler = None
 
     def stop_video(self):
         if self.video_handler:
