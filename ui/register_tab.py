@@ -7,7 +7,8 @@ import threading
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QPushButton,
-    QHBoxLayout, QFormLayout, QLineEdit, QMessageBox
+    QHBoxLayout, QFormLayout, QLineEdit, QMessageBox,
+    QComboBox
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
@@ -20,14 +21,6 @@ from utils.drive_utils import upload_image_to_drive
 
 
 class RegisterTab(QWidget):
-    """
-    Pestaña de registro que:
-      • Arranca un live-view guardando todos los frames en disco.
-      • Al “Capture” congela un frame para previsualizar.
-      • Al “Register Face” inserta el embedding en Weaviate y
-        crea una subcarpeta en Drive, luego sube todos los frames
-        en un hilo separado para no bloquear la UI.
-    """
     def __init__(self, model, collection, drive=None,
                  drive_parent_folder_id=None, parent=None):
         super().__init__(parent)
@@ -36,38 +29,47 @@ class RegisterTab(QWidget):
         self.drive = drive
         self.drive_parent_folder_id = drive_parent_folder_id
 
-        self.local_save_dir = None     # directorio donde guardamos frames
+        self.local_save_dir = None
         self.video_handler = None
-        self.image_bgr = None          # último frame capturado
+        self.image_bgr = None
 
         self.init_ui()
 
     def init_ui(self):
         main_layout = QHBoxLayout(self)
 
-        # ——— IZQUIERDA: Live-view + controles ———
+        # ——— IZQUIERDA: Selector de cámara + Live-view + controles ———
         left = QVBoxLayout()
+
+        # selector de cámara
+        cam_layout = QHBoxLayout()
+        cam_layout.addWidget(QLabel("Camera:"))
+        self.cam_selector = QComboBox()
+        cam_layout.addWidget(self.cam_selector)
+        left.addLayout(cam_layout)
+        self._detect_cameras()
+
+        # label de video / congelado
         self.register_image_label = QLabel("No video")
         self.register_image_label.setFixedSize(300, 300)
         self.register_image_label.setAlignment(Qt.AlignCenter)
         self.register_image_label.setStyleSheet("border:1px solid #aaa;")
         left.addWidget(self.register_image_label, alignment=Qt.AlignCenter)
 
+        # botones de control
         btns = QHBoxLayout()
-        btn_start = QPushButton("Start Live")
-        btn_start.clicked.connect(self.start_video)
-        btns.addWidget(btn_start)
-
+        btn_start   = QPushButton("Start Live")
         btn_capture = QPushButton("Capture")
+        btn_stop    = QPushButton("Stop Live")
+        btn_start.clicked.connect(self.start_video)
         btn_capture.clicked.connect(self.capture_image)
-        btns.addWidget(btn_capture)
-
-        btn_stop = QPushButton("Stop Live")
         btn_stop.clicked.connect(self.stop_video)
+        btns.addWidget(btn_start)
+        btns.addWidget(btn_capture)
         btns.addWidget(btn_stop)
-
         left.addLayout(btns)
 
+        # botón de registro
         btn_register = QPushButton("Register Face")
         btn_register.clicked.connect(self.register_user)
         left.addWidget(btn_register, alignment=Qt.AlignCenter)
@@ -91,20 +93,39 @@ class RegisterTab(QWidget):
         main_layout.addLayout(right)
         self.setLayout(main_layout)
 
+    def _detect_cameras(self, max_index: int = 5):
+        """
+        Escanea índices 0..max_index-1 y añade al combo
+        aquellos que respondan como dispositivos abiertos.
+        """
+        self.cam_selector.clear()
+        found = False
+        for i in range(max_index):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                self.cam_selector.addItem(f"Camera {i}", i)
+                cap.release()
+                found = True
+        if not found:
+            # al menos pon la 0
+            self.cam_selector.addItem("Camera 0", 0)
+
     # ——————————————————————————————
     # CONTROL DE VIDEO + ALMACÉN LOCAL
     # ——————————————————————————————
     def start_video(self):
-        # Prepara carpeta local
+        # montamos carpeta limpia
         self.local_save_dir = os.path.abspath("live_capture_frames")
         if os.path.exists(self.local_save_dir):
             shutil.rmtree(self.local_save_dir)
         os.makedirs(self.local_save_dir, exist_ok=True)
 
-        # Inicia handler pasándole el dir local
+        # índice seleccionado
+        cam_idx = self.cam_selector.currentData()
         self.video_handler = VideoRegisterHandler(
             self.register_image_label,
-            save_dir=self.local_save_dir
+            save_dir=self.local_save_dir,
+            camera_index=cam_idx
         )
         self.video_handler.start_camera()
 
@@ -117,12 +138,12 @@ class RegisterTab(QWidget):
             QMessageBox.warning(self, "Error", "Aún no hay frame disponible.")
             return
 
-        # Congela la imagen en el label
+        # congelar en label
         self.image_bgr = frame
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb.shape
         qimg = QImage(rgb.data, w, h, ch * w, QImage.Format_RGB888)
-        pix = QPixmap.fromImage(qimg).scaled(
+        pix  = QPixmap.fromImage(qimg).scaled(
             self.register_image_label.width(),
             self.register_image_label.height(),
             Qt.KeepAspectRatio,
@@ -130,24 +151,28 @@ class RegisterTab(QWidget):
         )
         self.register_image_label.setPixmap(pix)
 
-        # Detén el feed para no seguir guardando
+        # opcional: detener la grabación de frames
         self.video_handler.stop_camera()
-        self.video_handler = None
 
     def stop_video(self):
         if self.video_handler:
             self.video_handler.stop_camera()
+            self.video_handler = None
 
     # ——————————————————————————————
     # REGISTRO EN WEAVIATE + UPLOAD A DRIVE (en hilo)
     # ——————————————————————————————
     def register_user(self):
+        # detener live antes de procesar
+        if self.video_handler:
+            self.stop_video()
+
         if self.image_bgr is None:
             QMessageBox.warning(self, "Imagen faltante",
                                 "Captura primero un frame para registrar.")
             return
 
-        # 1) Insertar en Weaviate
+        # 1) Weaviate
         props = {
             "identification": self.id_input.text().strip(),
             "name":           self.name_input.text().strip(),
@@ -164,8 +189,8 @@ class RegisterTab(QWidget):
         insert_into_collection(self.collection, emb, props)
         search_by_vector(self.collection, emb, limit=5)
 
-        # 2) Crear carpeta en Drive: <Name>_<últimos5ID>
-        last5      = props["identification"][-5:]
+        # 2) Carpeta en Drive
+        last5       = props["identification"][-5:]
         folder_name = f"{props['name']}_{last5}"
         folder_meta = self.drive.CreateFile({
             'title':    folder_name,
@@ -175,7 +200,7 @@ class RegisterTab(QWidget):
         folder_meta.Upload()
         new_folder_id = folder_meta['id']
 
-        # 3) Lanzar hilo para subir los frames sin bloquear UI
+        # 3) Hilo de subida
         threading.Thread(
             target=self._upload_frames_worker,
             args=(new_folder_id,),
@@ -189,9 +214,6 @@ class RegisterTab(QWidget):
         )
 
     def _upload_frames_worker(self, drive_folder_id):
-        """
-        Función que corre en background para subir cada imagen a Drive.
-        """
         count = 0
         for fname in sorted(os.listdir(self.local_save_dir)):
             full_path = os.path.join(self.local_save_dir, fname)

@@ -6,3 +6,4 @@ __pycache__/
 data_handler
 .vscode
 client_secrets.json
+credentials.json
