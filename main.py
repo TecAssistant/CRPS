@@ -91,9 +91,9 @@ def video(model):
 
 def main():
     # video(face_detector)
-    drive = authenticate_drive()
+    # drive = authenticate_drive()
     app = QtWidgets.QApplication(sys.argv)
-    window = MainWindow(model=face_detector, collection=collection, drive=drive)
+    window = MainWindow(model=face_detector, collection=collection, drive=None)
     window.show()
 
     sys.exit(app.exec_())

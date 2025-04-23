@@ -59,22 +59,22 @@ def processing_worker(processing_queue, stop_event, model, collection, result_qu
                         # Llamamos a Weaviate y obtenemos el dict con user_data
                         user_data = search_by_vector(collection, embedding, 10)
 
-                        temp_image_path = "temp_face.jpg"
-                        if cv2.imwrite(temp_image_path, cropped_face):
-                            try:
-                                # Sólo intentamos subir si la autenticación fue exitosa.
-                                if drive is not None:
-                                    upload_image_to_drive(temp_image_path, folder_id, drive=drive)
+                        # temp_image_path = "temp_face.jpg"
+                        # if cv2.imwrite(temp_image_path, cropped_face):
+                        #     try:
+                        #         # Sólo intentamos subir si la autenticación fue exitosa.
+                        #         if drive is not None:
+                        #             upload_image_to_drive(temp_image_path, folder_id, drive=drive)
 
-                            except Exception as e:
-                                print(f"Error al subir la imagen: {e}")
+                        #     except Exception as e:
+                        #         print(f"Error al subir la imagen: {e}")
 
-                            finally:
-                                # Borramos el archivo temporal
-                                if os.path.exists(temp_image_path):
-                                    os.remove(temp_image_path)
-                        else:
-                            print("Error al guardar la imagen temporal.")
+                        #     finally:
+                        #         # Borramos el archivo temporal
+                        #         if os.path.exists(temp_image_path):
+                        #             os.remove(temp_image_path)
+                        # else:
+                        #     print("Error al guardar la imagen temporal.")
 
                         # Si hay resultado, lo metemos a result_queue
                         if user_data:

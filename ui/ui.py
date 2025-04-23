@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
         self.register_tab = RegisterTab(
             model=self.model,
             collection=self.collection,
-            camera_handler=None
+            drive=self.drive
         )
         self.tab_widget.addTab(self.register_tab, "Register")
 
