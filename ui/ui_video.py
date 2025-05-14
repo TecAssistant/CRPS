@@ -11,6 +11,9 @@ from yunet.detect_face import process_image_with_yunet
 from utils.facenet import preload_image_to_embedding
 from database.weaviate import search_by_vector
 from utils.drive_utils import upload_image_to_drive
+import datetime
+import csv
+import os
 
 
 def processing_worker(processing_queue, stop_event, model, collection, result_queue, drive):
@@ -23,9 +26,15 @@ def processing_worker(processing_queue, stop_event, model, collection, result_qu
     """
     input_width, input_height = model._inputSize
 
-    min_width = 0.07 * input_width
-    min_height = 0.07 * input_height
-    min_area = 0.05 * (input_width * input_height)
+    min_width = 0.02 * input_width
+    min_height = 0.02 * input_height
+    min_area = 0.02 * (input_width * input_height)
+
+    file_path = "user_logs.csv"
+    if not os.path.exists(file_path):
+        with open(file_path, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["usuario", "fecha", "estatus"])
 
     while not stop_event.is_set():
         try:
@@ -58,6 +67,26 @@ def processing_worker(processing_queue, stop_event, model, collection, result_qu
                         embedding = preload_image_to_embedding(cropped_face)
                         # Llamamos a Weaviate y obtenemos el dict con user_data
                         user_data = search_by_vector(collection, embedding, 10)
+
+                        print(user_data)
+                        now = datetime.datetime.now()
+                        timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+                        
+                        # Determinar el nombre del usuario o "Unknown user"
+                        if user_data:
+                            if user_data["confidence"] >= 40:
+                                user_name = user_data["name"]
+                                status = "Conocido"
+                            else:
+                                user_name = "Unknown user"
+                                status = "Desconocido"
+                            
+                            # Agregar los datos al archivo CSV
+                            with open(file_path, "a", newline="") as file:
+                                writer = csv.writer(file)
+                                writer.writerow([user_name, timestamp, status])
+                                
+
 
                         # temp_image_path = "temp_face.jpg"
                         # if cv2.imwrite(temp_image_path, cropped_face):

@@ -46,11 +46,12 @@ def initialize_dlib():
 def database():
 
     # Create a collection
-    create_person_collection()
 
+    # create_person_collection()
     # Remove a collection
 
     # client.collections.delete("Person")
+
 
     # Print a collection
     # print_collection(collection)
